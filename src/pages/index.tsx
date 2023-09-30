@@ -1,7 +1,9 @@
 import { FormEvent, useState, useEffect } from 'react'
 import axios from 'axios'
+import Loading from '../components/Loading'
+import parseText from '../lib/parseText'
 
-interface ParsedData {
+type ParsedData = {
   全票數量?: number
   半票數量?: number
   全名?: string
@@ -11,7 +13,7 @@ interface ParsedData {
   訂單編號?: string // 新增訂單編號
 }
 
-interface ShowData {
+type ShowData = {
   bookingDate?: string
   adultCount?: number
   childCount?: number
@@ -25,64 +27,17 @@ export default function Home() {
   const [showData, setShowData] = useState<ShowData>({})
   const [loading, setLoading] = useState<boolean>(false)
 
-  const parseText = (inputText: string) => {
-    const lines = inputText.split('\n')
-    const foundData: ParsedData = {}
-    let orderNumber: string | undefined
-
-    // 使用正則表達式找出訂單編號
-    const orderNumberMatch = inputText.match(/訂單編號:\s*([^\n]+)/)
-    if (orderNumberMatch) {
-      orderNumber = orderNumberMatch[1].split(' ')[0]
-    }
-
-    foundData['訂單編號'] = orderNumber
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim()
-      const key = line.split(':')[0].trim()
-      if (['單位', '全名', '參加時間', '手機號碼'].includes(key)) {
-        const validKey = key as keyof ParsedData
-        foundData[validKey] = lines[i + 2].trim() as any
-      }
-    }
-
-    let fullTicketCount: number = 0
-    let halfTicketCount: number = 0
-    if (foundData.單位) {
-      const unitInfo = foundData.單位
-      const tickets = unitInfo.split(',')
-      for (const ticket of tickets) {
-        const fullTicketMatch =
-          ticket.match(/全票.*x\s*(\d+)/) || ticket.match(/往返船票.*x\s*(\d+)/)
-        const halfTicketMatch = ticket.match(/半票.*x\s*(\d+)/)
-        if (fullTicketMatch) {
-          fullTicketCount = parseInt(fullTicketMatch[1], 10)
-        }
-        if (halfTicketMatch) {
-          halfTicketCount = parseInt(halfTicketMatch[1], 10)
-        }
-      }
-    }
-    foundData['全票數量'] = fullTicketCount
-    foundData['半票數量'] = halfTicketCount
-    return foundData
-  }
-
   const getOrderNumber = async (convertData: ParsedData) => {
     // 組合全名和訂單編號
     const combinedName = `${convertData['全名']} - ${convertData['訂單編號']}`
 
-    const res = await axios.post(
-      'https://tl-booking-bot-dev.zeabur.app/booking',
-      {
-        bookingDate: convertData['參加時間'],
-        adultCount: convertData['全票數量'],
-        childCount: convertData['半票數量'],
-        passengerName: combinedName, // 使用組合名稱
-        passengerPhone: convertData['手機號碼'],
-      },
-    )
+    const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/booking`, {
+      bookingDate: convertData['參加時間'],
+      adultCount: convertData['全票數量'],
+      childCount: convertData['半票數量'],
+      passengerName: combinedName, // 使用組合名稱
+      passengerPhone: convertData['手機號碼'],
+    })
 
     setShowData(res.data)
     setText('')
@@ -96,10 +51,6 @@ export default function Home() {
     getOrderNumber(convertData)
   }
 
-  useEffect(() => {
-    console.log('showData: ', showData)
-  }, [showData])
-
   const renderObj = {
     '出發日期：': showData.bookingDate,
     '乘客姓名：': showData.passengerName,
@@ -108,17 +59,15 @@ export default function Home() {
     '手機號碼：': showData.passengerPhone,
     '訂單編號：': showData.orderNumber,
   }
+
+  useEffect(() => {
+    console.log('showData: ', showData)
+  }, [showData])
+
   return (
     <div className='container flex justify-center items-center h-screen'>
       <div>
-        <div
-          style={{ display: loading ? 'flex' : 'none' }}
-          className='w-screen h-screen bg-black/70 fixed top-0 left-0 z-10 flex justify-center items-center'
-        >
-          <span className='loading loading-ring loading-lg'></span>
-          <span className='loading loading-ring loading-lg'></span>
-          <span className='loading loading-ring loading-lg'></span>
-        </div>
+        <Loading loading={loading} />
         <h1 className='text-5xl font-bold  rounded backdrop-blur-sm bg-white/30 p-3 text-gray-800 mb-3'>
           Klook 訂票系統
         </h1>
