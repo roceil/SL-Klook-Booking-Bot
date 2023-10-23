@@ -1,7 +1,8 @@
-import { FormEvent, useState, useEffect } from 'react'
+import { FormEvent, useState } from 'react'
 import axios from 'axios'
 import Loading from '../components/Loading'
 import parseText from '../lib/parseText'
+import { copyToClipboard } from '@/lib/copyToClipboard'
 
 type ParsedData = {
   全票數量?: number
@@ -28,24 +29,30 @@ export default function Home() {
   const [loading, setLoading] = useState<boolean>(false)
 
   const getOrderNumber = async (convertData: ParsedData) => {
-    // 組合全名和訂單編號
-    const combinedName = `${convertData['全名']} - ${convertData['訂單編號']}`
-
-    const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/booking`, {
-      bookingDate: convertData['參加時間'],
-      adultCount: convertData['全票數量'],
-      childCount: convertData['半票數量'],
-      passengerName: combinedName, // 使用組合名稱
-      passengerPhone: convertData['手機號碼'],
-    })
-
-    setShowData(res.data)
-    setText('')
-    setLoading(false)
+    try {
+      const combinedName = `${convertData['全名']} - ${convertData['訂單編號']}`
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/booking`,
+        {
+          bookingDate: convertData['參加時間'],
+          adultCount: convertData['全票數量'],
+          childCount: convertData['半票數量'],
+          passengerName: combinedName,
+          passengerPhone: convertData['手機號碼'],
+        },
+      )
+      setShowData(res.data)
+      setText('')
+      setLoading(false)
+    } catch (err) {
+      console.error('訂單獲取失敗', err)
+      setLoading(false)
+    }
   }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    setShowData({})
     setLoading(true)
     const convertData = parseText(text)
     getOrderNumber(convertData)
@@ -59,10 +66,6 @@ export default function Home() {
     '手機號碼：': showData.passengerPhone,
     '訂單編號：': showData.orderNumber,
   }
-
-  useEffect(() => {
-    console.log('showData: ', showData)
-  }, [showData])
 
   return (
     <div className='container flex justify-center items-center h-screen'>
@@ -78,6 +81,12 @@ export default function Home() {
               className='w-full h-full min-h-[500px] min-w-[500px] rounded backdrop-blur-sm bg-white/30 p-2 text-gray-800'
               value={text}
               onChange={e => setText(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSubmit(e)
+                }
+              }}
             />
             <button
               type='submit'
@@ -92,13 +101,24 @@ export default function Home() {
               <h2 className='text-2xl font-bold mb-10'>訂票結果</h2>
 
               {Object.keys(renderObj).map(key => (
-                <p
+                <div
                   key={key}
                   className='border-b pb-2 border-gray-800'
                 >
-                  {key}
-                  <b>{renderObj[key as keyof typeof renderObj]}</b>
-                </p>
+                  <span>{key}</span>
+                  {key === '訂單編號：' ? (
+                    <b
+                      className='cursor-pointer underline text-blue-500'
+                      onClick={() =>
+                        copyToClipboard(showData.orderNumber || '')
+                      }
+                    >
+                      {renderObj[key as keyof typeof renderObj]}
+                    </b>
+                  ) : (
+                    <b>{renderObj[key as keyof typeof renderObj]}</b>
+                  )}
+                </div>
               ))}
             </div>
           </div>

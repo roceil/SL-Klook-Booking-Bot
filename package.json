@@ -13,7 +13,8 @@
     "daisyui": "^3.8.1",
     "next": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "sweetalert2": "^11.7.32"
   },
   "devDependencies": {
     "@types/node": "latest",
