@@ -1,62 +1,28 @@
-import { FormEvent, useState } from 'react'
-import axios from 'axios'
+import { useState } from 'react'
 import Loading from '../components/Loading'
-import parseText from '../lib/parseText'
 import { copyToClipboard } from '@/lib/copyToClipboard'
+import { handleSubmit } from '../lib/handleSubmit'
 
-type ParsedData = {
-  全票數量?: number
-  半票數量?: number
-  全名?: string
-  參加時間?: string
-  手機號碼?: string
-  單位?: string
-  訂單編號?: string // 新增訂單編號
-}
-
-type ShowData = {
-  bookingDate?: string
-  adultCount?: number
-  childCount?: number
-  orderNumber?: string
-  passengerName?: string
-  passengerPhone?: string
+export type ShowData = {
+  bookingDate: string
+  adultCount: number
+  childCount: number
+  orderNumber: string
+  passengerName: string
+  passengerPhone: string
 }
 
 export default function Home() {
   const [text, setText] = useState<string>('')
-  const [showData, setShowData] = useState<ShowData>({})
+  const [showData, setShowData] = useState<ShowData>({
+    bookingDate: '',
+    adultCount: 0,
+    childCount: 0,
+    orderNumber: '',
+    passengerName: '',
+    passengerPhone: '',
+  })
   const [loading, setLoading] = useState<boolean>(false)
-
-  const getOrderNumber = async (convertData: ParsedData) => {
-    try {
-      const combinedName = `${convertData['全名']} - ${convertData['訂單編號']}`
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/booking`,
-        {
-          bookingDate: convertData['參加時間'],
-          adultCount: convertData['全票數量'],
-          childCount: convertData['半票數量'],
-          passengerName: combinedName,
-          passengerPhone: convertData['手機號碼'],
-        },
-      )
-      setShowData(res.data)
-      setText('')
-      setLoading(false)
-    } catch (err) {
-      console.error('訂單獲取失敗', err)
-      setLoading(false)
-    }
-  }
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    setShowData({})
-    setLoading(true)
-    const convertData = parseText(text)
-    getOrderNumber(convertData)
-  }
 
   const renderObj = {
     '出發日期：': showData.bookingDate,
@@ -76,7 +42,11 @@ export default function Home() {
         </h1>
 
         <div className='flex space-x-4'>
-          <form onSubmit={handleSubmit}>
+          <form
+            onSubmit={e =>
+              handleSubmit({ e, setShowData, setLoading, text, setText })
+            }
+          >
             <textarea
               className='w-full h-full min-h-[500px] min-w-[500px] rounded backdrop-blur-sm bg-white/30 p-2 text-gray-800'
               value={text}
@@ -84,7 +54,7 @@ export default function Home() {
               onKeyDown={e => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault()
-                  handleSubmit(e)
+                  handleSubmit({ e, setShowData, setLoading, text, setText })
                 }
               }}
             />
