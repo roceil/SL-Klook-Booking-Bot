@@ -23,18 +23,27 @@ export const getOrderNumber = async ({
 }: ParsedData) => {
   try {
     const combinedName = `${convertData.passengerName} - ${convertData.orderNumber}`
-    const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/booking`, {
-      bookingDate: convertData.departureDate,
-      adultCount: convertData.adultCount,
-      childCount: convertData.childCount,
-      passengerName: combinedName,
-      passengerPhone: convertData.passengerPhone,
-    })
+    const headers = {
+      Identity: process.env.NEXT_PUBLIC_IDENTITY,
+    }
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/booking`,
+      {
+        bookingDate: convertData.departureDate,
+        adultCount: convertData.adultCount,
+        childCount: convertData.childCount,
+        passengerName: combinedName,
+        passengerPhone: convertData.passengerPhone,
+      },
+      {
+        headers,
+      },
+    )
     setShowData(res.data)
     setText('')
     setLoading(false)
     showAlertWithTimer('success', '訂票成功')
-    return res.data; 
+    return res.data
   } catch (err) {
     showAlertWithTimer('error', '訂單獲取失敗')
     setLoading(false)
