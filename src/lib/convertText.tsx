@@ -23,8 +23,8 @@ const parseText = (inputText: string): ParsedData => {
   const departureDateRegex = /參加時間:\s*\n\s*([\d-]+)/
   const passengerNameRegex = /全名:\s*([^\n]+)/
   const passengerPhoneRegex = /手機號碼:\s*([^\n]+)/
-  const fullTicketRegex = /全票.*x\s*(\d+)/
-  const roundTripTicketRegex = /往返船票.*x\s*(\d+)/
+  const fullTicketRegex = /全票\s*x\s*(\d+)/
+  const roundTripTicketRegex = /往返船票\s*·\s*.*x\s*(\d+)/
   const halfTicketRegex = /半票.*x\s*(\d+)/
 
   // 搜尋訂單編號
