@@ -18,7 +18,6 @@ export const handlers = [
     (req, res, ctx) => {
       const body = req.body as BookingRequestBody;
       const { bookingDate, passengerName, adultCount, childCount, passengerPhone } = body;
-  
       return res(
         ctx.status(200),
         ctx.json({

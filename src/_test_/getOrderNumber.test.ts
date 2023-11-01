@@ -1,4 +1,4 @@
-import { getOrderNumber, ParsedData } from '../lib/getOrderNumber' // 請自行替換正確的模塊名
+import { getOrderNumber, ParsedData } from '../lib/getOrderNumber'
 import { mswServer } from '../../mocks/server'
 import { showAlertWithTimer } from '../lib/showAlertWithTimer'
 import { rest } from 'msw'
@@ -17,8 +17,8 @@ describe('getOrderNumber 功能', () => {
   const mockParsedData: ParsedData = {
     convertData: {
       departureDate: '2023-11-31',
-      passengerName: '',
-      adultCount: 0,
+      passengerName: '測試',
+      adultCount: 1,
       childCount: 0,
       passengerPhone: '0912-345678',
       orderNumber: '2023000000',
@@ -30,7 +30,7 @@ describe('getOrderNumber 功能', () => {
 
   it('【成功】測試 API 發送成功', async () => {
     // ====== 執行 ====== //
-    await getOrderNumber(mockParsedData)
+    const res = await getOrderNumber(mockParsedData)
 
     // ====== 驗證 ====== //
     expect(mockParsedData.setShowData).toHaveBeenCalledWith({
@@ -44,6 +44,7 @@ describe('getOrderNumber 功能', () => {
 
     expect(mockParsedData.setText).toHaveBeenCalledWith('')
   })
+  
 
   it('【失敗】測試 API 發送失敗', async () => {
     // 在特定測試內覆寫預設行為

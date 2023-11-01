@@ -48,6 +48,53 @@ Neilliu0424@gmail.com
 劉建軍
 `;
 
+const adultWithChildInput = `
+訂單編號: TZX733306
+預訂時間: 2023-11-01 00:01:21 (GMT+8)
+訂單狀態: 已確認
+2023191846
+產品編號：:
+
+22886
+產品名稱：:
+
+小琉球船票｜屏東東港漁港 - 小琉球｜船票＆拼車接駁
+方案名稱:
+
+往返船票 · 不含接駁 · 無機車租借 · 東琉聯營處（保證新船）
+成本價總額:
+
+2,755.00 TWD
+單位:
+
+全票 x 7, 半票 x 1
+參加時間:
+
+2023-12-30
+憑證類型:
+
+KLOOKCODE
+訂單確認時效:
+
+立即確認並發送憑證
+確認時間:
+
+2023-11-01 00:04:39
+訂單來源:
+
+Klook
+全名:
+
+焦 慈慧
+電子信箱:
+
+h234.h835@gmail.com
+手機號碼:
+
+886-916234835
+
+`
+
 const adultRoundTripInput = `
 訂單編號: FKH699004
 預訂時間: 2023-10-23 21:57:08 (GMT+8)
@@ -154,6 +201,18 @@ describe('轉換輸入文字函式', () => {
       childCount: 0,
       passengerPhone: '886-0930101253',
       orderNumber: 'NUQ576054'
+    });
+  });
+
+  it('【成功】轉換全票訂單訊息－全票＆半票', () => {
+    const result = convertText(adultWithChildInput);
+    expect(result).toEqual({
+      departureDate: '2023-12-30',
+      passengerName: '焦 慈慧',
+      adultCount: 7,
+      childCount: 1,
+      passengerPhone: '886-916234835',
+      orderNumber: 'TZX733306'
     });
   });
 
